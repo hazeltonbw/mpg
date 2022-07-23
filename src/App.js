@@ -24,7 +24,6 @@ function App() {
   const usersCar = useSelector(selectUsersCar)
   const carStyles = useSelector(selectCarStyles)
   const submitDisabled = useSelector(selectSubmitDisabled)
-  console.log(carStyles)
 
   const handleSelectChange = ({ target }) => {
     dispatch(updateUsersCar({ menu: target.name, menuData: target.value }))
