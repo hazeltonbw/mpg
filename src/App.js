@@ -5,7 +5,6 @@ import {
   fetchModels,
   fetchOptions,
   selectYearsMenu,
-  selectSubmitDisabled,
   selectModelsMenu,
   selectMakesMenu,
   selectOptionsMenu,
@@ -33,7 +32,8 @@ function App() {
   const handleSubmit = (e) => {
     e.preventDefault()
     //console.log(e.target[3].options[1].id)
-    const id = e.target[3].options[1].id
+    const options = e.target[3].options
+    const id = options[options.selectedIndex].id
     dispatch(fetchVehicleRecord(id))
   }
 
