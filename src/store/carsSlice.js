@@ -1,26 +1,33 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { getMakes, getYears, getModels, getCarData } from '../api/fetchCarData'
+import {
+  getVehicleRecord,
+  getMakes,
+  getYears,
+  getModels,
+  getOptions,
+} from '../api/fetchCarData'
 const initialState = {
   error: false,
   isLoading: false,
   yearsMenu: { disabled: false, isLoading: false, error: false },
   makesMenu: { disabled: true, isLoading: false, error: false },
   modelsMenu: { disabled: true, isLoading: false, error: false },
-  submitDisabled: false,
+  optionsMenu: { disabled: true, isLoading: false, error: false },
   usersCar: {},
   carStyles: [],
+  vehicleRecord: {},
 }
 
-export const fetchCarData = createAsyncThunk(
-  'carsSlice/fetchCarData',
+export const fetchOptions = createAsyncThunk(
+  'carsSlice/fetchOptions',
   async (usersCar) => {
-    let carData
+    let options
     try {
-      carData = await getCarData(usersCar)
+      options = await getOptions(usersCar)
     } catch (err) {
       console.log(err)
     }
-    return carData
+    return options
   }
 )
 
@@ -60,6 +67,20 @@ export const fetchModels = createAsyncThunk(
   }
 )
 
+export const fetchVehicleRecord = createAsyncThunk(
+  'carsSlice/fetchVehicleRecord',
+  async (id) => {
+    let vehicleRecord
+    try {
+      vehicleRecord = await getVehicleRecord(id)
+    } catch (err) {
+      console.log(err)
+    }
+    console.log(vehicleRecord)
+    return vehicleRecord
+  }
+)
+
 const { actions, reducer } = createSlice({
   name: 'carsSlice',
   initialState: initialState,
@@ -75,9 +96,6 @@ const { actions, reducer } = createSlice({
       }
 
       state.usersCar[action.payload.menu] = action.payload.menuData
-    },
-    toggleSubmitDisabled: (state) => {
-      state.submitDisabled = !state.submitDisabled
     },
   },
   extraReducers: (builder) => {
@@ -111,7 +129,6 @@ const { actions, reducer } = createSlice({
       state.modelsMenu.models = action.payload
       state.modelsMenu.isLoading = false
       state.modelsMenu.disabled = false
-      state.submitDisabled = false
     })
     builder.addCase(fetchModels.pending, (state) => {
       state.modelsMenu.isLoading = true
@@ -121,28 +138,43 @@ const { actions, reducer } = createSlice({
       state.modelsMenu.error = true
       state.modelsMenu.isLoading = false
     })
-    builder.addCase(fetchCarData.fulfilled, (state, action) => {
-      state.carStyles = action.payload
+    builder.addCase(fetchOptions.fulfilled, (state, action) => {
+      Array.isArray(action.payload)
+        ? (state.optionsMenu.options = action.payload)
+        : (state.optionsMenu.options = new Array(action.payload))
+      state.optionsMenu.disabled = false
       state.isLoading = false
     })
-    builder.addCase(fetchCarData.pending, (state) => {
+    builder.addCase(fetchOptions.pending, (state) => {
+      state.optionsMenu.isLoading = true
+      state.optionsMenu.error = false
+    })
+    builder.addCase(fetchOptions.rejected, (state) => {
+      state.optionsMenu.error = true
+      state.optionsMenu.isLoading = false
+    })
+    builder.addCase(fetchVehicleRecord.fulfilled, (state, action) => {
+      state.vehicleRecord = action.payload
+      state.isLoading = false
+    })
+    builder.addCase(fetchVehicleRecord.pending, (state) => {
       state.isLoading = true
       state.error = false
     })
-    builder.addCase(fetchCarData.rejected, (state) => {
+    builder.addCase(fetchVehicleRecord.rejected, (state) => {
       state.error = true
       state.isLoading = false
     })
   },
 })
 
-export const { updateUsersCar, toggleSubmitDisabled } = actions
+export const { updateUsersCar } = actions
 
 export const selectYearsMenu = (state) => state.carsSlice.yearsMenu
 export const selectMakesMenu = (state) => state.carsSlice.makesMenu
 export const selectModelsMenu = (state) => state.carsSlice.modelsMenu
+export const selectOptionsMenu = (state) => state.carsSlice.optionsMenu
 export const selectUsersCar = (state) => state.carsSlice.usersCar
-export const selectCarStyles = (state) => state.carsSlice.carStyles
-export const selectSubmitDisabled = (state) => state.carsSlice.submitDisabled
+export const selectVehicleRecord = (state) => state.carsSlice.vehicleRecord
 
 export default reducer
